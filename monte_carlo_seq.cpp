@@ -1,4 +1,4 @@
-#include "monte_carlo_seq.hpp"
+
 
 template<typename return_type, typename arg_type>
 double monte_carlo_seq(double A, double B, int N, return_type(*f)(arg_type)){
