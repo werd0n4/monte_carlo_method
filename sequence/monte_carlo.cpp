@@ -1,3 +1,5 @@
+#pragma once
+#include <random>
 
 
 template<typename return_type, typename arg_type>
