@@ -23,10 +23,18 @@ double monte_carlo_seq(double A, double B, int N, return_type(*f)(arg_type)){
         y = dis_y(gen);
         result = f(x);
 
-        if(/*check if point is under plot*/){
-            ++points_in;
+        if(result > 0 && y > 0){
+            if(y < result){
+                ++points_in;
+            }
+        }
+        else if(result < 0 && y < 0){
+            if(y > result){
+                --points_in;
+            }
         }
     }
 
     return area * points_in/N;
 }
+
