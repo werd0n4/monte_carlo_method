@@ -5,18 +5,18 @@
 #include "parallel/monte_carlo.cuh"
 
 
-double linear_func(double x){
-    return 2*x - 4;
-}
+// __host__ double linear_func(double x){
+//     return 2*x - 4;
+// }
 
 void run_parallel_version(){
 	unsigned long cuRand_seed = time(NULL);
-	cudaError error;
-	int size = 1000;
-    int block_size = 128;
+	// cudaError error;
+	int size = 10000;
+    int block_size = 512;
     int score = 0;
-    int result;
-    int gpu_size = 100;
+    double result;
+    int gpu_size = 100000;
 
     //zahardcodowane przedziały
     double user_A = 1;
@@ -44,7 +44,7 @@ void run_parallel_version(){
 	dim3 grid((size / block.x) + 1);
 
     //uruchom funkcje z zahardcodowanymi parametrami
-	monte_carlo_parallel<<<grid, block>>> (cuRand_seed, user_A, user_B, randomY_min, randomY_max, d_c, size, gpu_size, linear_func);
+	monte_carlo_parallel<<<grid, block>>> (cuRand_seed, user_A, user_B, randomY_min, randomY_max, d_c, size, gpu_size);
 	cudaDeviceSynchronize();//wait for all threads to finish
 
 	//memory transfer back to host

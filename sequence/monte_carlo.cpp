@@ -2,9 +2,9 @@
 #include "monte_carlo.hpp"
 
 
-// double linear_func(double x){
-//     return 2*x - 4;
-// }
+double linear_func(double x){
+    return 2*x - 4;
+}
 
 template<typename return_type, typename arg_type>
 double monte_carlo_seq(double A, double B, long long N, return_type(*f)(arg_type)){

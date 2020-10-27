@@ -2,12 +2,15 @@
 #include "monte_carlo.cuh"
 
 
+__device__ double f(double x){
+    return 2*x - 4;
+}
 // template<typename return_type, typename arg_type>
 __global__ void monte_carlo_parallel(unsigned long seed,
                                     double A, double B,
                                     double min_Y, double max_Y,
-                                    int* array, int threads_amount, int gpu_size,
-                                    double(*f)(double))
+                                    int* array, int threads_amount, int gpu_size
+									)
 {
     int gid = blockIdx.x * blockDim.x + threadIdx.x;
     
@@ -39,6 +42,7 @@ __host__ void print_device_info(){
     cudaGetDeviceProperties(&iProp, device_number);
     
 	printf("Device %d: %s\n", device_number, iProp.name);
+	printf("Compute capability: %d.%d\n", iProp.major, iProp.minor);
 	printf("Number of multiprocessors:   %d\n", iProp.multiProcessorCount);
 	printf("Clockrate: %d\n", iProp.clockRate);
     printf("maxThreadsPerBlock: %d\n", iProp.maxThreadsPerBlock);

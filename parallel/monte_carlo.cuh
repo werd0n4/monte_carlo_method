@@ -20,7 +20,7 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
 __global__ void monte_carlo_parallel(unsigned long seed,
                                     double A, double B,
                                     double min_Y, double max_Y,
-                                    int* array, int threads_amount, int gpu_size,
-                                    double(*f)(double));
+                                    int* array, int threads_amount, int gpu_size
+);
 
 __host__ void print_device_info();

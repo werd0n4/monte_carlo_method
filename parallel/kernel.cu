@@ -18,7 +18,7 @@ __device__ double user_f(double x) {
 	return 2 * x - 4;
 }
 
-//czesc odpowiedzialna za handling errorów w czeœci GPU ********************
+//czesc odpowiedzialna za handling errorï¿½w w czeï¿½ci GPU ********************
 #define gpuErrchk(ans){gpuAssert((ans), __FILE__,__LINE__);}
 inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort = true) {
 	if (code != cudaSuccess) {
@@ -52,8 +52,8 @@ __global__ void parrelCuda(int gpu_size,unsigned long seed, double A, double B, 
 	//1.losuj random x z przedzialu A do B
 	//2.losuj random y z przedzialu min_y max_Y
 	//3. policz funkcje f(x)---------------------poziom if contains
-	//4. przyrównaj f(x) z wylosowanym Y
-	//5. zwróc wynik
+	//4. przyrï¿½wnaj f(x) z wylosowanym Y
+	//5. zwrï¿½c wynik
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
 	if (gid < size) {
 		int addToScore = 0;
@@ -104,20 +104,20 @@ int main() {
 	float user_A, user_B, randomY_min, randomY_max, result;
 	int n, score;
 	int gpu_size = 100000; //100;// 100000;//1;//100000;
-	//result to pole ca³ki
-	//obecnie zahardcodowany przedzia³ ca³kowania
+	//result to pole caï¿½ki
+	//obecnie zahardcodowany przedziaï¿½ caï¿½kowania
 	user_A = 1;
 	user_B = 4;
 	unsigned long cuRand_seed = time(NULL);
-	//Dok³adnoœæ- liczba n losowanych punktów-tutaj potem ustawiæ znacznie wiêcej
-	//Obecnie dotyczy jedynie losowania punktów w polu, a nie granic pola
+	//Dokï¿½adnoï¿½ï¿½- liczba n losowanych punktï¿½w-tutaj potem ustawiï¿½ znacznie wiï¿½cej
+	//Obecnie dotyczy jedynie losowania punktï¿½w w polu, a nie granic pola
 	//n = 200;
 
 
 
 	//TODO piotrek part
 	//LOSOWANIE PUNKTOW w celu wyznaczenia tylko min i max Y "prostokata"
-	//opis dzia³ania: wylosuj N punktow, dziêki temu wyznacz granice Y prostok¹ta- zrównolegliæ w tym miejscu
+	//opis dziaï¿½ania: wylosuj N punktow, dziï¿½ki temu wyznacz granice Y prostokï¿½ta- zrï¿½wnolegliï¿½ w tym miejscu
 	randomY_min = -2;
 	randomY_max = 4;// Niech losuj (X), jesli f(X)>Max ustaw nowy max, jesli f(x)<Min ustaw Min
 
@@ -125,8 +125,8 @@ int main() {
 
 
 	cudaError error;
-	int size = 10000;//2* 100000;//10000;//to jest nowe n
-	int block_size = 1024;//1024;//128;
+	int size = 1000;//2* 100000;//10000;//to jest nowe n
+	int block_size = 128;//1024;//128;
 
 	int NO_BYTES = size * sizeof(int);
 	//hostp ointers
@@ -207,28 +207,28 @@ double randomPoint(double a, double b) {
 int main23() {
 	float user_A, user_B, randomY_min, randomY_max, result;
 	int n, score;
-	//result to pole ca³ki
-	//obecnie zahardcodowany przedzia³ ca³kowania
+	//result to pole caï¿½ki
+	//obecnie zahardcodowany przedziaï¿½ caï¿½kowania
 	user_A = 1;
 	user_B = 4;
 
-	//Dok³adnoœæ- liczba n losowanych punktów-tutaj potem ustawiæ znacznie wiêcej
-	//Obecnie dotyczy jedynie losowania punktów w polu, a nie granic pola
+	//Dokï¿½adnoï¿½ï¿½- liczba n losowanych punktï¿½w-tutaj potem ustawiï¿½ znacznie wiï¿½cej
+	//Obecnie dotyczy jedynie losowania punktï¿½w w polu, a nie granic pola
 	n = 500;
 
 
 
 	//TODO piotrek part
 	//LOSOWANIE PUNKTOW w celu wyznaczenia tylko min i max Y "prostokata"
-	//opis dzia³ania: wylosuj N punktow, dziêki temu wyznacz granice Y prostok¹ta- zrównolegliæ w tym miejscu
+	//opis dziaï¿½ania: wylosuj N punktow, dziï¿½ki temu wyznacz granice Y prostokï¿½ta- zrï¿½wnolegliï¿½ w tym miejscu
 	randomY_min = -2;
 	randomY_max = 4;// Niech losuj (X), jesli f(X)>Max ustaw nowy max, jesli f(x)<Min ustaw Min
 
 
 	//TODO 
-	//Tutaj drugie zrównoleglenie- losowaæ na GPU 10000000 punktów i sprawdzaæ wartoœæ ifContains
-	//trzeba jakoœ przerobiæ i randompoint- uzyæ cuda random
-	//i ifContains- zapisaæ gdzieœ wartoœæi przedzia³ów aby GPU ca³ czas mia³o do nich dostêp?
+	//Tutaj drugie zrï¿½wnoleglenie- losowaï¿½ na GPU 10000000 punktï¿½w i sprawdzaï¿½ wartoï¿½ï¿½ ifContains
+	//trzeba jakoï¿½ przerobiï¿½ i randompoint- uzyï¿½ cuda random
+	//i ifContains- zapisaï¿½ gdzieï¿½ wartoï¿½ï¿½i przedziaï¿½ï¿½w aby GPU caï¿½ czas miaï¿½o do nich dostï¿½p?
 	score = 0;//co to
 	srand((unsigned)time(NULL));
 	for (int i = 0; i < n; i++) {
