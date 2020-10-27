@@ -1,3 +1,6 @@
 build/
 main.o
 Makefile
+test_cuda2.vcxproj
+test_cuda2.vcxproj.user
+x64/
