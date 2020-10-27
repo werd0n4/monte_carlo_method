@@ -16,11 +16,11 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
 	}
 }
 
-template<typename return_type, typename arg_type>
+// template<typename return_type, typename arg_type>
 __global__ void monte_carlo_parallel(unsigned long seed,
                                     double A, double B,
                                     double min_Y, double max_Y,
                                     int* array, int threads_amount, int gpu_size,
-                                    return_type(*f)(arg_type));
+                                    double(*f)(double));
 
-__global__ void print_device_info();
+__host__ void print_device_info();

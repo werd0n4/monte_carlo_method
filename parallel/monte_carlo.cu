@@ -2,11 +2,16 @@
 #include "monte_carlo.cuh"
 
 
-template<typename return_type, typename arg_type>
-__global__ void monte_carlo_parallel(unsigned long seed, double A, double B, double min_Y, double max_Y, int* array, int threads_amount, int gpu_size, return_type(*f)arg_type){
+// template<typename return_type, typename arg_type>
+__global__ void monte_carlo_parallel(unsigned long seed,
+                                    double A, double B,
+                                    double min_Y, double max_Y,
+                                    int* array, int threads_amount, int gpu_size,
+                                    double(*f)(double))
+{
     int gid = blockIdx.x * blockDim.x + threadIdx.x;
     
-	if (gid < size) {
+	if (gid < threads_amount) {
         int addToScore = 0;
         double X, Y;
 		curandState_t state;
@@ -23,11 +28,11 @@ __global__ void monte_carlo_parallel(unsigned long seed, double A, double B, dou
 				--addToScore;
 			}
 		}
-		c[gid] = addToScore;
+		array[gid] = addToScore;
 	}
 }
 
-__global__ void print_device_info(){
+__host__ void print_device_info(){
 	int device_number = 0;
     cudaDeviceProp iProp;
     
