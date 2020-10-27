@@ -45,7 +45,12 @@ __host__ void print_device_info(){
 	printf("Compute capability: %d.%d\n", iProp.major, iProp.minor);
 	printf("Number of multiprocessors:   %d\n", iProp.multiProcessorCount);
 	printf("Clockrate: %d\n", iProp.clockRate);
-    printf("maxThreadsPerBlock: %d\n", iProp.maxThreadsPerBlock);
+	printf("maxThreadsPerBlock: %d\n", iProp.maxThreadsPerBlock);
+	
+	printf("Total amount of global memory: %4.2f KB\n", iProp.totalGlobalMem/1024.0);
+	printf("Total amount of constant memory: %4.2f KB\n", iProp.totalConstMem/1024.0);
+	printf("Total amount of shared memory per block: %4.2f KB\n", iProp.sharedMemPerBlock/1024.0);
+	printf("Total amount of shared memory per MP: %4.2f KB\n", iProp.sharedMemPerMultiprocessor/1024.0);
     
 	printf("maxThreadsDim max dimension of a block x %d\n", iProp.maxThreadsDim[0]);
 	printf("maxThreadsDim max dimension of a block y %d\n", iProp.maxThreadsDim[1]);
