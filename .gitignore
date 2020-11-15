@@ -4,3 +4,7 @@ Makefile
 test_cuda2.vcxproj
 test_cuda2.vcxproj.user
 x64/
+.vs/
+a.exp
+a.lib
+.vscode/

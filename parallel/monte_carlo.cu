@@ -1,33 +1,42 @@
+#pragma once
 
-#include "monte_carlo.cuh"
+#include <iostream>
+#include <numeric>
+#include <curand.h>
+#include <curand_kernel.h>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
 
 
-__device__ double f(double x){
-    return 2*x - 4;
-}
-// template<typename return_type, typename arg_type>
-__global__ void monte_carlo_parallel(unsigned long seed,
+typedef double(*FunctionCallback)(double);
+
+namespace parallel {
+
+__global__ void monteCarloThread(unsigned long seed,
                                     double A, double B,
                                     double min_Y, double max_Y,
-                                    int* array, int threads_amount, int gpu_size
-									)
+                                    int* array, int threads_amount, int gpu_size,
+									FunctionCallback f)
 {
-    int gid = blockIdx.x * blockDim.x + threadIdx.x;
+	int gid = blockIdx.x * blockDim.x + threadIdx.x;
     
 	if (gid < threads_amount) {
         int addToScore = 0;
-        double X, Y;
+        double X, randomValue, realValue;
 		curandState_t state;
 		curand_init(seed, gid, 0, &state);
 
 		for(int j = 0; j < gpu_size; ++j){
-            X = ((double)(curand(&state) / (double)(0x0FFFFFFFFUL) * (B - A))) + A;
-			Y = ((double)(curand(&state) / (double)(0x0FFFFFFFFUL) * (max_Y - min_Y))) + min_Y;
+            X = curand_uniform_double(&state) * (B - A) + A;
+			randomValue = curand_uniform_double(&state) * (max_Y - min_Y) + min_Y;
 
-			if ((Y > 0) && (Y <= f(X))) {
+			realValue = f(X);
+
+			if ((randomValue > 0) && (randomValue <= realValue)) {
 				++addToScore;
 			}
-			else if ((Y < 0) && (Y >= f(X))) {
+			else if ((randomValue < 0) && (randomValue >= realValue)) {
 				--addToScore;
 			}
 		}
@@ -35,28 +44,70 @@ __global__ void monte_carlo_parallel(unsigned long seed,
 	}
 }
 
-__host__ void print_device_info(){
-	int device_number = 0;
-    cudaDeviceProp iProp;
-    
-    cudaGetDeviceProperties(&iProp, device_number);
-    
-	printf("Device %d: %s\n", device_number, iProp.name);
-	printf("Compute capability: %d.%d\n", iProp.major, iProp.minor);
-	printf("Number of multiprocessors:   %d\n", iProp.multiProcessorCount);
-	printf("Clockrate: %d\n", iProp.clockRate);
-	printf("maxThreadsPerBlock: %d\n", iProp.maxThreadsPerBlock);
+double monteCarlo(int n, double A, double B, double min, double max, FunctionCallback f){
+
+	unsigned long cuRand_seed = time(NULL);	
+    int score = 0;
+    double result;
+
 	
-	printf("Total amount of global memory: %4.2f KB\n", iProp.totalGlobalMem/1024.0);
-	printf("Total amount of constant memory: %4.2f KB\n", iProp.totalConstMem/1024.0);
-	printf("Total amount of shared memory per block: %4.2f KB\n", iProp.sharedMemPerBlock/1024.0);
-	printf("Total amount of shared memory per MP: %4.2f KB\n", iProp.sharedMemPerMultiprocessor/1024.0);
+	
+	cudaDeviceProp iProp;
+	cudaGetDeviceProperties(&iProp, 0);
+	int threads = iProp.maxThreadsPerBlock;
+	int blocks = iProp.multiProcessorCount;
+    //hostp pointers
+	int* gpu_results;
+	//device pointers
+    int* d_c;
+	
+	int size = threads * blocks;
+	int sizeInBytes = size * sizeof(int);
+    gpu_results = (int*)malloc(sizeInBytes);
     
-	printf("maxThreadsDim max dimension of a block x %d\n", iProp.maxThreadsDim[0]);
-	printf("maxThreadsDim max dimension of a block y %d\n", iProp.maxThreadsDim[1]);
-    printf("maxThreadsDim max dimension of a block z %d\n", iProp.maxThreadsDim[2]);
+
+	memset(gpu_results, 0, sizeInBytes);
+
+	cudaMalloc((int**)&d_c, sizeInBytes);
+
+	int calculationsPerThread = (n + size -1) / size;
+	
+
+	monteCarloThread<<<blocks, threads>>> (cuRand_seed, A, B, min, max, d_c, size, calculationsPerThread, f);
+	cudaDeviceSynchronize();
+	cudaMemcpy(gpu_results, d_c, sizeInBytes, cudaMemcpyDeviceToHost);
+
+	score = std::accumulate(gpu_results, gpu_results+size, 0);
+
+	result = (score / ((double)size*calculationsPerThread)) *
+		((B - A) * (max - min));
     
-	printf("maxGridSize[3] max size of grid dimension x : %d\n", iProp.maxGridSize[0]);
-	printf("maxGridSize[3] max size of grid dimension y : %d\n", iProp.maxGridSize[1]);
-	printf("maxGridSize[3] max size of grid dimension z : %d\n", iProp.maxGridSize[2]);
+	cudaFree(d_c);
+	free(gpu_results);
+
+	return result;
+}
+
+void timeTestMonteCarloPar(int m, int n, double a, double b, double min, double max, FunctionCallback f){
+    std::cout << std::setprecision(5);
+    std::chrono::duration<double> total = std::chrono::duration<double>::zero();
+    std::chrono::duration<double> diff;
+    std::chrono::high_resolution_clock::time_point start;
+    std::chrono::high_resolution_clock::time_point end;
+
+    std::cout << "Testing parallel Monte Carlo..." << std::endl;
+    for(int i = 1; i <= m; ++i){
+        start = std::chrono::high_resolution_clock::now();
+        monteCarlo(n, a, b, min, max, f);
+		end = std::chrono::high_resolution_clock::now();
+        std::cout << "\r" << i * 100.0 / m << "%  ";
+        std::cout << std::flush;
+        diff = end - start;
+        total += diff;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Parallel Monte Carlo average time: " << total.count()/m << std::endl;
+}
+
 }
