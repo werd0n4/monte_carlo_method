@@ -8,3 +8,4 @@ x64/
 a.exp
 a.lib
 .vscode/
+out/
