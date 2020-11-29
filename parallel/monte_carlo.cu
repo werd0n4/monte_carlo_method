@@ -7,9 +7,13 @@
 #include <ctime>
 #include <chrono>
 #include <iomanip>
+#include <sstream>
+#include <fstream>
 
 
 typedef double(*FunctionCallback)(double);
+
+
 
 namespace parallel {
 
@@ -54,6 +58,8 @@ double monteCarlo(int n, double A, double B, double min, double max, FunctionCal
 	
 	cudaDeviceProp iProp;
 	cudaGetDeviceProperties(&iProp, 0);
+	//int threads = 512;
+	//int blocks = 100;
 	int threads = iProp.maxThreadsPerBlock;
 	int blocks = iProp.multiProcessorCount;
     //hostp pointers
@@ -95,16 +101,27 @@ void timeTestMonteCarloPar(int m, int n, double a, double b, double min, double 
     std::chrono::high_resolution_clock::time_point start;
     std::chrono::high_resolution_clock::time_point end;
 
-    std::cout << "Testing parallel Monte Carlo..." << std::endl;
-    for(int i = 1; i <= m; ++i){
-        start = std::chrono::high_resolution_clock::now();
-        monteCarlo(n, a, b, min, max, f);
-		end = std::chrono::high_resolution_clock::now();
-        std::cout << "\r" << i * 100.0 / m << "%  ";
-        std::cout << std::flush;
-        diff = end - start;
-        total += diff;
-    }
+	std::ofstream file;
+	std::stringstream filename;
+	filename << "montePar_" << m << '_' << n << ".txt";
+	n = 1 << n;
+	file.open(filename.str());
+	if (file.good() == true)
+	{
+
+    	std::cout << "Testing parallel Monte Carlo... for size: " << n << std::endl;
+    	for(int i = 1; i <= m; ++i){
+    	    start = std::chrono::high_resolution_clock::now();
+    	    monteCarlo(n, a, b, min, max, f);
+			end = std::chrono::high_resolution_clock::now();
+    	    std::cout << "\r" << i * 100.0 / m << "%  ";
+    	    std::cout << std::flush;
+    	    diff = end - start;
+			file << diff.count() << std::endl;
+			total += diff;
+		}
+	file.close();
+	}
 
     std::cout << std::endl;
     std::cout << "Parallel Monte Carlo average time: " << total.count()/m << std::endl;

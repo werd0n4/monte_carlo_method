@@ -3,7 +3,8 @@
 #include <chrono>
 #include <iomanip>
 #include <cmath>
-
+#include <ostream>
+#include <sstream>
 #include "parallel/findMinMax.cu"
 #include "parallel/monte_carlo.cu"
 #include "sequence/findMinMax.cpp"
@@ -16,10 +17,7 @@ typedef double(*FunctionCallback)(double);
 __host__ void print_device_info();
 __device__ double myCosDev(double x);
 double myCos(double x);
-void timeTestMonteCarloSeq(int m, int n, double a, double b, double min, double max, FunctionCallback f);
-void timeTestMonteCarloPar(int m, int n, double a, double b, double min, double max, FunctionCallback f);
-void timeTestMinMaxloSeq(int m, int n, double a, double b, FunctionCallback f);
-void timeTestMinMaxPar(int m, int n, double a, double b, FunctionCallback f);
+
 
 __device__  FunctionCallback myCosPar = myCosDev;
 
@@ -34,17 +32,27 @@ int main()
 
 	double a =0;
 	double b =10;
-	double min = -1;
-	double max = 1;
-
-    int n = 3;
-    int m = 1<<23;
-
-	sequence::timeTestMonteCarloSeq(n, m, a, b, min, max, myCos);
-	parallel::timeTestMonteCarloPar(n, m, a, b, min, max, myCosHost);
-	sequence::timeTestMinMaxloSeq(n, m, a, b, myCos);
-	parallel::timeTestMinMaxPar(n, m, a, b, myCosHost);
+	auto minMax = sequence::minMaxValue(1 << 20, a, b, myCos);
+	double min = minMax.first;
+	double max = minMax.second;
 	
+
+    int n = 50;
+
+	for (int m = 15; m <= 25; m++)
+	{
+		std::cout << "-------------------------------------------------------------------------------" << std::endl;
+		//sequence::timeTestMonteCarloSeq(n, m, a, b, min, max, myCos);
+		//parallel::timeTestMonteCarloPar(n, m, a, b, min, max, myCosHost);
+		std::cout << "-------------------------------------------------------------------------------" << std::endl;
+		//sequence::timeTestMinMaxloSeq(n, m, a, b, myCos);
+		parallel::timeTestMinMaxPar(n, m, a, b, myCosHost);
+	}
+	for (int m = 26; m <= 30; m++)
+	{
+		parallel::timeTestMinMaxPar(n, m, a, b, myCosHost);
+		//parallel::timeTestMonteCarloPar(n, m, a, b, min, max, myCosHost);
+	}
 
     return 0;
 }
@@ -78,11 +86,13 @@ __host__ void print_device_info() {
 
 __device__ double myCosDev(double x)
 {
+	//return (exp(x) * sin(x) + pow(x, 5.0)) / log(x);
 	return cos(x);
 }
 
 double myCos(double x)
 {
+	//return (exp(x) * sin(x) + pow(x, 5.0)) / log(x);
 	return cos(x);
 }
 

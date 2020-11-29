@@ -4,6 +4,8 @@
 #include <numeric>
 
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include <chrono>
 #include <iomanip>
 
@@ -43,15 +45,26 @@ void timeTestMinMaxloSeq(int m, int n, double a, double b, FunctionCallback f){
     std::chrono::high_resolution_clock::time_point start;
     std::chrono::high_resolution_clock::time_point end;
 
-    std::cout << "Testing sequence MinMax..." << std::endl;
-    for(int i = 1; i <= m; ++i){
-        start = std::chrono::high_resolution_clock::now();
-        minMaxValue(n, a, b, f);
-		end = std::chrono::high_resolution_clock::now();
-        std::cout << "\r" << i * 100.0 / m << "%  ";
-        std::cout << std::flush;
-        diff = end - start;
-        total += diff;
+    std::ofstream file;
+    std::stringstream filename;
+    filename << "minMaxSeq_" << m << '_' << n << ".txt";
+    n = 1 << n;
+    file.open(filename.str());
+    if (file.good() == true)
+    {
+        
+        std::cout << "Testing sequence MinMax... for size: " << n << std::endl;
+        for(int i = 1; i <= m; ++i){
+            start = std::chrono::high_resolution_clock::now();
+            minMaxValue(n, a, b, f);
+		    end = std::chrono::high_resolution_clock::now();
+            std::cout << "\r" << i * 100.0 / m << "%  ";
+            std::cout << std::flush;
+            diff = end - start;
+            file << diff.count() << std::endl;
+            total += diff;
+        }
+    file.close();
     }
 
     std::cout << std::endl;

@@ -10,6 +10,8 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <sstream>
+#include <fstream>
 
 typedef double(*FunctionCallback)(double);
 
@@ -121,6 +123,8 @@ std::pair<double, double> minMaxValueV2(int n, double a, double b, FunctionCallb
 
 	cudaDeviceProp iProp;
 	cudaGetDeviceProperties(&iProp, 0);
+	//int threads = 512;
+	//int blocks = 100;
 	int threads = iProp.maxThreadsPerBlock;
 	int blocks = iProp.multiProcessorCount;
 
@@ -173,16 +177,27 @@ void timeTestMinMaxPar(int m, int n, double a, double b, FunctionCallback f){
     std::chrono::high_resolution_clock::time_point start;
     std::chrono::high_resolution_clock::time_point end;
 
-    std::cout << "Testing parallel MinMax..." << std::endl;
-    for(int i = 1; i <= m; ++i){
-        start = std::chrono::high_resolution_clock::now();
-        minMaxValueV2(n, a, b, f);
-        end = std::chrono::high_resolution_clock::now();
-        std::cout << "\r" << i * 100.0 / m << "%  ";
-        std::cout << std::flush;
-        diff = end - start;
-        total += diff;
-    }
+	std::ofstream file;
+	std::stringstream filename;
+	filename << "minMaxPar_" << m << '_' << n << ".txt";
+	n = 1 << n;
+	file.open(filename.str());
+	if (file.good() == true)
+	{
+
+    	std::cout << "Testing parallel MinMax... for size: " << n << std::endl;
+    	for(int i = 1; i <= m; ++i){
+    	    start = std::chrono::high_resolution_clock::now();
+    	    minMaxValue(n, a, b, f);
+    	    end = std::chrono::high_resolution_clock::now();
+    	    std::cout << "\r" << i * 100.0 / m << "%  ";
+    	    std::cout << std::flush;
+    	    diff = end - start;
+			file << diff.count() << std::endl;
+			total += diff;
+		}
+	file.close();
+	}
 
     std::cout << std::endl;
     std::cout << "Parallel MinMax average time: " << total.count()/m << std::endl;

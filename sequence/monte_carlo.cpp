@@ -3,6 +3,8 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <sstream>
+#include <fstream>
 
 typedef double(*FunctionCallback)(double);
 
@@ -44,15 +46,27 @@ void timeTestMonteCarloSeq(int m, int n, double a, double b, double min, double 
     std::chrono::high_resolution_clock::time_point start;
     std::chrono::high_resolution_clock::time_point end;
 
-    std::cout << "Testing sequence Monte Carlo..." << std::endl;
-    for(int i = 1; i <= m; ++i){
-        start = std::chrono::high_resolution_clock::now();
-        monteCarlo(n, a, b, min, max, f);
-		end = std::chrono::high_resolution_clock::now();
-        std::cout << "\r" << i * 100.0 / m << "%  ";
-        std::cout << std::flush;
-        diff = end - start;
-        total += diff;
+
+    std::ofstream file;
+    std::stringstream filename;
+    filename << "monteSeq_" << m << '_' << n << ".txt";
+    n = 1 << n;
+    file.open(filename.str());
+    if (file.good() == true)
+    {
+
+        std::cout << "Testing sequence Monte Carlo... for size: " << n << std::endl;
+        for(int i = 1; i <= m; ++i){
+            start = std::chrono::high_resolution_clock::now();
+            monteCarlo(n, a, b, min, max, f);
+	    	end = std::chrono::high_resolution_clock::now();
+            std::cout << "\r" << i * 100.0 / m << "%  ";
+            std::cout << std::flush;
+            diff = end - start;
+            file << diff.count() << std::endl;
+            total += diff;
+        }
+    file.close();
     }
 
     std::cout << std::endl;
